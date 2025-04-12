@@ -12,10 +12,9 @@ import {
   getDocs,
   setDoc,
   doc,
-  QuerySnapshot,
   QueryDocumentSnapshot,
-  onSnapshot,
 } from "firebase/firestore";
+
 
 export const useBeverageStore = defineStore("BeverageStore", {
   state: () => ({
@@ -33,9 +32,91 @@ export const useBeverageStore = defineStore("BeverageStore", {
   }),
 
   actions: {
-    init() {},
-    makeBeverage() {},
+    init() {
+      const baseCollection = collection(db, "bases");
+      getDocs(baseCollection).then( QuerySnapshot => {
+          this.bases = QuerySnapshot.docs.map((doc: QueryDocumentSnapshot) => 
+          ({
+            id:doc.id,
+            name:doc.data().name,
+            color: doc.data().color
+          }) as BaseBeverageType);
+        this.currentBase = this.bases[0]
+    });
 
-    showBeverage() {},
+      const creamerCollection = collection(db, "creamers");
+      getDocs(creamerCollection).then( QuerySnapshot => {
+          this.creamers = QuerySnapshot.docs.map((doc: QueryDocumentSnapshot) => 
+          ({
+            id: doc.id,
+            name: doc.data().name,
+            color: doc.data().color
+          }) as CreamerType);
+        
+        this.currentCreamer = this.creamers[0]
+    });
+
+      const syrupCollection = collection(db, "syrups");
+      getDocs(syrupCollection).then( QuerySnapshot => {
+          this.syrups = QuerySnapshot.docs.map((doc: QueryDocumentSnapshot) =>
+          ({
+            id: doc.id,
+            name: doc.data().name,
+            color: doc.data().color,
+          }) as SyrupType);
+        
+        this.currentSyrup = this.syrups[0]
+    });
+
+      const beverageCollection = collection(db, "beverages");
+      getDocs(beverageCollection).then((QuerySnapshot) => {
+        this.beverages = QuerySnapshot.docs.map(
+          (doc) => 
+          ({
+            id: doc.id,
+            name: doc.data().name,
+            temp: doc.data().temp,
+            base: doc.data().base,
+            syrup: doc.data().syrup,
+            creamer: doc.data().creamer
+          }) as BeverageType);
+        });
+    },
+    makeBeverage() {
+      if(this.currentName && this.currentTemp && this.currentBase && this.currentSyrup && this.currentCreamer) {
+        const id = `${this.currentName}-${this.currentBase.id}-${this.currentSyrup.id}-${this.currentCreamer.id}`;
+        const bev = doc(db, "beverages", id);
+        
+        const newBeverage = {
+          id: id,
+          name: this.currentName,
+          base: this.currentBase,
+          syrup: this.currentSyrup,
+          creamer: this.currentCreamer,
+          temp: this.currentTemp
+        }
+        setDoc(bev, {
+          id: id,
+          name: this.currentName,
+          base: this.currentBase,
+          syrup: this.currentSyrup,
+          creamer: this.currentCreamer,
+          temp: this.currentTemp
+        }).then(() => {
+          this.currentBeverage = newBeverage;
+          this.beverages.push(this.currentBeverage)
+        }
+      )}
+    },
+    
+    showBeverage() {
+      if (this.currentBeverage) {
+        this.currentTemp = this.currentBeverage?.temp || this.currentTemp;
+        this.currentBase = this.currentBeverage?.base || this.currentBase;
+        this.currentSyrup = this.currentBeverage?.syrup || this.currentSyrup;
+        this.currentCreamer = this.currentBeverage?.creamer || this.currentCreamer;
+      }
+    },
   },
+  persist: false,
 });
