@@ -12,12 +12,9 @@ import {
   getDocs,
   setDoc,
   doc,
-  QuerySnapshot,
   QueryDocumentSnapshot,
-  onSnapshot,
-  query,
 } from "firebase/firestore";
-import { experimentalSetDeliveryMetricsExportedToBigQueryEnabled } from "firebase/messaging/sw";
+
 
 export const useBeverageStore = defineStore("BeverageStore", {
   state: () => ({
@@ -111,6 +108,7 @@ export const useBeverageStore = defineStore("BeverageStore", {
         }
       )}
     },
+    
     showBeverage() {
       if (this.currentBeverage) {
         this.currentTemp = this.currentBeverage?.temp || this.currentTemp;
@@ -120,5 +118,5 @@ export const useBeverageStore = defineStore("BeverageStore", {
       }
     },
   },
-  persist: true,
+  persist: false,
 });
